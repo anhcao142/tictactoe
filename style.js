@@ -1,126 +1,76 @@
-let array = new Array(10);
-let isPlayer1=true;
+let array = new Array(3).fill(null).map(() => new Array(3).fill(""));
+let isPlayer1 = true;
 let cellsWin = [];
 let gameEnded = false;
 let gameStarted = false;
 
+start();
 
 function start() {
-  if (gameStarted && !gameEnded) {
-    document.getElementById('instruction').innerText = "Hãy chiến đấu hết mình!";
-    return;
+  if (!gameStarted || gameEnded) {
+    gameStarted = true;
+    gameEnded = false;
+    resetBoard();
+    display();
+    document.getElementById('instruction').innerText = "Bấm bắt đầu để chơi";
   }
-   gameStarted = true;
-  gameEnded = false;
-  
-  resetBoard();
-  display();
 }
 
 function resetBoard() {
-  cellsWin=[];
-  for (let i = 0; i < array.length; i++) {
-    array[i] = new Array(10);
-    for (let j = 0; j < array[i].length; j++) {
-      array[i][j] = "";
+  cellsWin = [];
+  array = new Array(3).fill(null).map(() => new Array(3).fill(""));
+  display();
+  gameStarted = true;
+  gameEnded = false;
+}
+
+function display() {
+  let tableString = '<table style="table-layout: fixed; width: 300px; height: 300px; border-collapse: collapse;">';
+  for (let i = 0; i < 3; i++) {
+    tableString += '<tr>';
+    for (let j = 0; j < 3; j++) {
+      const cellStyle = cellsWin.includes(`${i}-${j}`) ? 'background-color:lightgreen;' : '';
+      const textColor = array[i][j] === "X" ? 'color:blue;' : 'color:red;';
+      tableString += `<td style="width: 100px; height: 100px; font-size: 1.2em; overflow: hidden; text-align: center; vertical-align: middle; border: 1px solid black; ${textColor} ${cellStyle}" onclick="play(${i},${j})">${array[i][j]}</td>`;
     }
+    tableString += '</tr>';
+  }
+  tableString += '</table>';
+  document.getElementById("result").innerHTML = tableString;
+}
+
+function play(i, j) {
+  if (array[i][j] === "" && !gameEnded) {
+    array[i][j] = isPlayer1 ? "X" : "O";
+    isPlayer1 = !isPlayer1;
+    if (checkWin(array[i][j])) {
+      gameEnded = true;
+      document.getElementById('game-result').innerText = `${array[i][j]} wins!!!`;
+      display();
+      return;
+    }
+  } else if (!gameEnded) {
+    alert("This cell is already filled. Choose another one.");
   }
   display();
 }
 
-display();
-function display() {
-  let tableString = `<table>`;
-  for (let i = 0; i<3; i++) {
-    tableString += `<tr>`;
-    for (let j = 0; j<3; j++) {
-      if (cellsWin.includes(`${i}-${j}`)) {
-      if (array[i][j]==="X") {
-        tableString += `<td style="color:blue; background-color:lightgreen" onclick="play(${i},${j})">${array[i][j]}</td>`;
-      } else if (array[i][j]==="O") {
-        tableString += `<td style="color:red; background-color:lightgreen" onclick="play(${i},${j})">${array[i][j]}</td>`;
-      } else {
-        tableString += `<td onclick="play(${i},${j})">${array[i][j]}</td>`;
-      }  
-  } else {
-      if (array[i][j]==="X") {
-        tableString += `<td style=" color:blue" onclick="play(${i},${j})">${array[i][j]}</td>`;
-      } else if (array[i][j]==="O") {
-        tableString += `<td style="color:red" onclick="play(${i},${j})">${array[i][j]}</td>`;
-      } else {
-        tableString += `<td onclick="play(${i},${j})">${array[i][j]}</td>`;
-      }
-    }    
-  }
-  tableString += `</tr>`;
-}
-tableString += `</table>`;
-  document.getElementById("result").innerHTML=tableString;
-}
-function play(i,j) {
-  if (cellIsEmpty(i,j)) {
-    if (isPlayer1) {
-      array[i][j] ="X";
-      isPlayer1 = false;
-      if (checkWin("X")) {
-        alert ("X thắng!!!")
-        return;
-      }
-    } else {
-      array[i][j] ="O";
-      isPlayer1 = true;
-      if (checkWin("O")) {
-        alert ("O thắng!!!")
-        return;
-      }
-    }
-  } else {
-    return;
-    // alert("Ô này đã đánh rồi. Chọn lại ô khác")
-  }
-  display();
-}
-function cellIsEmpty(i,j) {
-    return array[i][j]==="";
-}
 function checkWin(value) {
-  for (let i = 0; i<array.length; i++) {
-    for (let j = 0; j<array[i].length; j++) {
-      let checkTX = array[i][j] === value
-        && array[i+1][j] === value
-        && array[i+2][j] === value;
-      let checkTP = array[i][j] === value
-        && array[i][j+1] === value
-        && array[i][j+2] === value;
-      let checkCTXTP = array[i][j] === value
-        && array[i+1][j+1] === value
-        && array[i+2][j+2] === value;
-      let checkCTXPT = array[i][j] === value
-        && array[i+1][j-1] === value
-        && array[i+2][j-2] === value;  
-      if (checkTX) {
-          cellsWin.push(`${i}-${j}`);
-          cellsWin.push(`${i+1}-${j}`);
-          cellsWin.push(`${i+2}-${j}`);
-        return true;
-      }
-      if (checkTP) {
-        cellsWin.push(`${i}-${j}`);
-        cellsWin.push(`${i}-${j+1}`);
-        cellsWin.push(`${i}-${j+2}`);
-        return true;
-      }
-      if (checkCTXTP) {
-        cellsWin.push(`${i}-${j}`);
-        cellsWin.push(`${i+1}-${j+1}`);
-        cellsWin.push(`${i+2}-${j+2}`);
-        return true;
-      }
-      if (checkCTXPT) {
-        cellsWin.push(`${i}-${j}`);
-        cellsWin.push(`${i+1}-${j-1}`);
-        cellsWin.push(`${i+2}-${j-2}`);
-        return true;
+  const directions = [
+    [1, 0], [0, 1], [1, 1], [1, -1]
+  ];
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      for (let [dx, dy] of directions) {
+        const line = [
+          array[i][j],
+          (array[i + dx] || [])[j + dy],
+          (array[i + 2 * dx] || [])[j + 2 * dy]
+        ];
+        if (line.every(cell => cell === value)) {
+          cellsWin.push(`${i}-${j}`, `${i + dx}-${j + dy}`, `${i + 2 * dx}-${j + 2 * dy}`);
+          return true;
+        }
       }
     }
   }
